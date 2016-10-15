@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.ServiceProcess;
 using System.Timers;
 
@@ -8,6 +7,9 @@ namespace ArkaneSystems.Wabash.D
 {
     public class WabashD : ServiceBase
     {
+        private const string psCommand = "ps" ;
+        private const string psArguments = "--ppid 1 --no-headers -o comm" ;
+
 	private Timer loop = new Timer();
 
         public WabashD ()
@@ -39,11 +41,29 @@ namespace ArkaneSystems.Wabash.D
             int initCount = -1 ;
             int daemonCount = 0 ;
 
-            Process[] processes = from p in Process.GetProcesses()
-                                  where p.Parent.Id == 1
-                                  select p;
+            var proc = new Process {
+              StartInfo = new ProcessStartInfo {
+                FileName = psCommand,
+                Arguments = psArguments,
+                UseShellExecute = false,
+                RedirectStandardOutput = true
+              }
+            };
 
-            Console.WriteLine ("sess: {0} daem: {1}", processes.Count(), 0);
+            proc.Start();
+            var raw = proc.StandardOutput.ReadToEnd();
+            proc.WaitForExit();
+
+            var cooked = raw.Split (new string [] { Environment.NewLine },
+                                    StringSplitOptions.RemoveEmptyEntries ) ;
+
+            foreach (string s in cooked)
+              if (s == "init")
+                initCount++;
+              else
+                daemonCount++;
+
+            Console.WriteLine ("sess: {0} daem: {1}", initCount, daemonCount);
         }
     }
 }
