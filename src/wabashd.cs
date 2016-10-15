@@ -1,7 +1,10 @@
 using System;
 using System.Diagnostics;
 using System.ServiceProcess;
+using System.Threading;
 using System.Timers;
+
+using Mono.Unix.Native;
 
 namespace ArkaneSystems.Wabash.D
 {
@@ -10,7 +13,9 @@ namespace ArkaneSystems.Wabash.D
         private const string psCommand = "ps" ;
         private const string psArguments = "--ppid 1 --no-headers -o comm" ;
 
-	private Timer loop = new Timer();
+	private System.Timers.Timer loop = new System.Timers.Timer();
+
+        private object consoleLock = new object ();
 
         public WabashD ()
         { }
@@ -21,23 +26,30 @@ namespace ArkaneSystems.Wabash.D
             loop.AutoReset = true ;
             loop.Elapsed += (x, y) => Tick ();
 
-            // Console.WriteLine ("wabashd starting...") ;
-            Console.WriteLine ("version: 1") ;
+            lock (consoleLock)
+            {
+                Console.WriteLine ("version: 1") ;
+            }
 
             Tick ();
             loop.Start();
+
+            ThreadPool.QueueUserWorkItem ( this.HandleInput );
         }
 
         protected override void OnStop ()
         {
-            // Console.WriteLine ("wabashd stopping...") ;
             loop.Stop();
 
-            Console.WriteLine ("stop");
+            lock (consoleLock)
+            {
+                Console.WriteLine ("stop");
+            }
         }
 
         protected void Tick ()
         {
+            // Count processes.
             int initCount = -1 ;
             int daemonCount = 0 ;
 
@@ -63,7 +75,45 @@ namespace ArkaneSystems.Wabash.D
               else
                 daemonCount++;
 
-            Console.WriteLine ("sess: {0} daem: {1}", initCount, daemonCount);
+            lock (consoleLock)
+            {
+                Console.WriteLine ("sess: {0} daem: {1}", initCount, daemonCount);
+            }
+        }
+
+	protected void HandleInput (object state)
+        {
+            // blocking
+            var commandString = Console.ReadLine ();
+
+            switch (commandString)
+            {
+                case "ping":
+                    {
+                        lock (consoleLock)
+                        {
+                            Console.WriteLine ("pong");
+                        }
+                        break;
+                    }
+                case "stop":
+                    {
+                        var pid = Syscall.getpid();
+                        Syscall.kill (pid, Signum.SIGTERM);
+                        break;
+                    }
+                default:
+                    {
+                        lock (consoleLock)
+                        {
+                            Console.WriteLine ("error");
+                        }
+                        break;
+                    }
+            }
+
+            // Regenerate self
+            ThreadPool.QueueUserWorkItem ( this.HandleInput ) ;
         }
     }
 }

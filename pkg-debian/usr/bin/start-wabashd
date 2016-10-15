@@ -1,0 +1,3 @@
+#!/bin/sh
+mono-service --no-daemon /usr/bin/wabashd.exe
+
