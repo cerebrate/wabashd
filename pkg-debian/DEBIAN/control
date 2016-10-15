@@ -4,8 +4,7 @@ Architecture: all
 Essential: no
 Section: utils
 Priority: optional
-Depends: mono-4.0-service (>=4.2.1)
-Depends: mono-runtime (>=4.2.1)
+Depends: mono-4.0-service (>= 4.2.1), mono-runtime (>= 4.2.1)
 Maintainer: Alistair Young <avatar@arkane-systems.net>
 Installed-Size: 6
 Description: The Windows Service for Linux portion of the wabash session-keepalive system.
