@@ -9,4 +9,4 @@ Uninstall with:
 
     sudo dpkg -r wabashd
 
-See the cerebrate/wabash repository for more information.
+See the cerebrate/wabash repository ( https://github.com/cerebrate/wabash ) for more information.
