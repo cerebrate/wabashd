@@ -28,7 +28,7 @@ namespace ArkaneSystems.Wabash.D
 
             lock (consoleLock)
             {
-                Console.WriteLine ("version: 1") ;
+                Console.WriteLine ("version: 2") ;
             }
 
             Tick ();
@@ -86,7 +86,18 @@ namespace ArkaneSystems.Wabash.D
             // blocking
             var commandString = Console.ReadLine ();
 
-            switch (commandString)
+            if (commandString.Length < 4)
+            {
+                lock (consoleLock)
+                {
+                    Console.WriteLine ("error");
+                    goto skip;
+                }
+            }
+
+            var action = commandString.Substring (0, 4);
+
+            switch (action)
             {
                 case "ping":
                     {
@@ -102,6 +113,48 @@ namespace ArkaneSystems.Wabash.D
                         Syscall.kill (pid, Signum.SIGTERM);
                         break;
                     }
+                case "strt":
+                    {
+                        var split = commandString.Split (' ') ;
+                        if (split.Length != 2)
+                        {
+                            lock (consoleLock)
+                            {
+                                Console.WriteLine ("serror <none>");
+                                break;
+                            }
+                        }
+
+                        var serv = split[1];
+
+                        lock (consoleLock)
+                        {
+                            Process toStart = new Process {
+                                StartInfo = new ProcessStartInfo {
+                                    FileName = "/usr/bin/sudo",
+                                    Arguments = $"/usr/sbin/service {serv} start",
+                                    UseShellExecute = false,
+                                    RedirectStandardOutput = true
+                                }
+                            };
+
+                            toStart.Start();
+                            var raw = toStart.StandardOutput.ReadToEnd();
+                            toStart.WaitForExit();
+
+                            var cooked = raw.Split (new string [] { Environment.NewLine },
+                                                    StringSplitOptions.RemoveEmptyEntries );
+
+                            if (cooked.Length == 0)
+                            {
+                                Console.WriteLine ($"serror {serv}");
+                                break;
+                            }
+
+                            Console.WriteLine ($"svup {cooked[0]}");
+                        }
+                        break;
+                    }
                 default:
                     {
                         lock (consoleLock)
@@ -111,6 +164,8 @@ namespace ArkaneSystems.Wabash.D
                         break;
                     }
             }
+
+            skip:
 
             // Regenerate self
             ThreadPool.QueueUserWorkItem ( this.HandleInput ) ;
