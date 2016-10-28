@@ -1,0 +1,4 @@
+#!/bin/sh
+cd ~/source/wabashd
+dpkg -b pkg-debian/ wabashd_3_wsl.deb
+

@@ -28,7 +28,7 @@ namespace ArkaneSystems.Wabash.D
 
             lock (consoleLock)
             {
-                Console.WriteLine ("version: 2") ;
+                Console.WriteLine ("version: 3") ;
             }
 
             Tick ();
@@ -70,7 +70,7 @@ namespace ArkaneSystems.Wabash.D
                                     StringSplitOptions.RemoveEmptyEntries ) ;
 
             foreach (string s in cooked)
-              if (s == "init")
+              if ((s == "init") || (s == "bash"))
                 initCount++;
               else
                 daemonCount++;
