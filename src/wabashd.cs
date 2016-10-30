@@ -4,6 +4,7 @@ using System.ServiceProcess;
 using System.Threading;
 using System.Timers;
 
+using Mono.Unix;
 using Mono.Unix.Native;
 
 namespace ArkaneSystems.Wabash.D
@@ -22,13 +23,16 @@ namespace ArkaneSystems.Wabash.D
 
         protected override void OnStart (string [] args)
         {
+            var shell = UnixUserInfo.GetRealUser().ShellProgram;
+
             loop.Interval = 2000 ;
             loop.AutoReset = true ;
             loop.Elapsed += (x, y) => Tick ();
 
             lock (consoleLock)
             {
-                Console.WriteLine ("version: 3") ;
+                Console.WriteLine ("version: 4") ;
+                Console.WriteLine ($"shell: {shell}");
             }
 
             Tick ();
