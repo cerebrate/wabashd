@@ -1,4 +1,4 @@
 #!/bin/sh
-cd ~/source/wabashd
-dpkg -b pkg-debian/ wabashd_4_wsl.deb
+cd ~/src/wabashd
+dpkg -b pkg-debian/ ../../wabashd_5_wsl.deb
 

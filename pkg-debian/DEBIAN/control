@@ -1,5 +1,5 @@
 Package: wabashd
-Version: 4
+Version: 5
 Architecture: all
 Essential: no
 Section: utils

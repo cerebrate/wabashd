@@ -1,3 +1,21 @@
 #!/bin/sh
-mono-service --no-daemon /usr/bin/wabashd.exe
+# check if lock file exists
+if [ -e "/tmp/wabashd.exe.lock" ]
+then
+  # if lock file exists, check if it is in use;
+  # i.e., if wabashd is running
+  lsof /tmp/wabashd.exe.lock
+
+  if [ $? -eq 0 ]
+  then
+    # file is in use
+    # this should not happen; error out
+    exit 1
+  else
+    # file is not in use
+    rm /tmp/wabashd.exe.lock
+  fi
+fi
+
+exec mono-service --no-daemon /usr/bin/wabashd.exe
 
